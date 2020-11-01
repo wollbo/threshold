@@ -26,6 +26,22 @@ Syntax highlighted code block
 [Link](url) and ![Image](src)
 ```
 
+```markdown
+<div class="layout-wrapper">
+    <div class="controls">
+        <label for="p">p:</label><input id="p" type="number" size="5" value="0.5" onchange="draw()" />
+        <label for="lambda">lambda:</label><input id="lambda" type="number" size="5" value="1" onchange="draw()" />
+    </div>
+    <div id="renderer">
+        <!-- here all the plots will be rendered -->
+    </div>
+
+    <link rel="stylesheet" href="/css/cost.css" />
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+    <script src="js/cost.js" charset="utf-8"></script>
+</div>
+```
+
 For more details see [GitHub Flavored Markdown](https://guides.github.com/features/mastering-markdown/).
 
 ### Jekyll Themes
