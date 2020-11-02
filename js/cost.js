@@ -4,9 +4,9 @@ var w = 345., h = 350., padding = 30.; // width height
 var p = 0.5, lambda = 1.;
 var threshold = 1.;
 
-var tMin = -3;
-var tMax = 5.;
-var maxValue = 2.;
+var tMin = 0;
+var tMax = 1;
+var maxValue = 5.;
 
 function cost(x, p, lambda) {
     return -p * Math.log(x) -lambda * (1-p) * Math.log(1-x);
