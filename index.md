@@ -16,3 +16,4 @@ In doing so, we can find an analytical, closed form solution for the threshold c
 ```markdown
 q = p / (p + lambda * (1-p))
 ```
+{% include /custom/bokeh_demo.html %}
