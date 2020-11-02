@@ -2,7 +2,7 @@
 // defining global constants
 var w = 345., h = 350., padding = 30.; // width height
 var p = 0.5, lambda = 1.;
-var threshold = 1.;
+var threshold = 1.; // 0 or 1 ?
 
 var tMin = 0;
 var tMax = 1;
