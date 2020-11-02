@@ -5,7 +5,7 @@ There is no absolute best way or default framework for selecting this threshold,
 However, practical datasets are commonly unbalanced, and the costs associated with the different errors is dependent on the application. For example, when detecting a rare disease, the best classifier should perhaps be skewed towards predicting more False Positives than False Negatives, since an undetected disease might cause more harm than medicating a healthy person.
 This indicates that a general framework for selecting the threshold should incorporate both information regarding class balance in the true dataset as well as the costs associated with the different errors.
 
-## Minimizing distance between prediction distribution and true labels
+### Minimizing distance between prediction distribution and true labels
 
 One way to approach the problem of finding the best threshold is to minimize the average cost incurred from the false predictions, scaled with the cost associated with the respective errors. This has to be performed on a verification partition of our training data, however, since we should not have have access to the test dataset labels when selecting our threshold.
 Another approach is to assume that the class balance in the training data is representative of the test data, such that we can assume that samples drawn from the test set follow the same distribution as that of the training set.
