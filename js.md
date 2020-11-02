@@ -9,5 +9,5 @@
 
     <link rel="stylesheet" href="/css/cost.css" />
     <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
-    <script src="js/cost.js" charset="utf-8"></script>
+    <script src="/js/cost.js" charset="utf-8"></script>
 </div>
