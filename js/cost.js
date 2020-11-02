@@ -2,10 +2,15 @@
 // defining global constants
 var w = 345., h = 350., padding = 30.; // width height
 var p = 0.5, lambda = 1.;
+var threshold = 1.;
 
 var tMin = -3;
 var tMax = 5.;
 var maxValue = 2.;
+
+function cost(x, p, lambda) {
+    return -p * Math.log(x) -lambda * (1-p) * Math.log(1-x);
+}
 
 var xScaleDev = d3.scale.linear()
     .domain([tMin, tMax])
@@ -59,53 +64,49 @@ svg.append("g")
     .attr("transform", "translate(" + 0 + ",0)")
     .call(yAxis);
 
-var roc_curve_line = d3.svg.line() // Use cost function
+var cost_function_line = d3.svg.line() // Use cost function
     .x(function (d) {
-        return xScale(1. - cdf(d, mean1, var1));
+        return xScale(d);
     })
     .y(function (d) {
-        return yScale(1. - cdf(d, mean2, var2));
+        return yScale(cost(d, p, lambda));
     });
 
-var roc_curve_path = svg
+var cost_function_path = svg
     .append("path")
     .attr("class", "line")
     .attr("stroke", "green");
 
 var circle = svg // use X from min function, Y from cost function value
     .append("circle")
-    .attr("cx", xScale(1 - cdf(threshold, mean1, var1)))
-    .attr("cy", yScale(1 - cdf(threshold, mean2, var2)))
+    .attr("cx", xScale(threshold))
+    .attr("cy", yScale(cost(threshold, p, lambda)))
     .attr("r", 4);
 
 function draw() {
     // parsing arguments
-    mean1 = parseFloat($('#mean1').val());
-    mean2 = parseFloat($('#mean2').val());
-    var1 = parseFloat($('#var1').val());
-    var2 = parseFloat($('#var2').val());
+    p = parseFloat($('#p').val());
+    lambda = parseFloat($('#lambda').val());
 
 
     var thresholds = [];
-    var right_thresholds = [];
 
-    tMin = Math.min(mean1 - 3 * Math.sqrt(var1), mean2 - 3 * Math.sqrt(var2));
-    tMax = Math.max(mean1 + 3 * Math.sqrt(var1), mean2 + 3 * Math.sqrt(var2));
+    tMin = 0.0001 // cost function undefined on endpoints
+    tMax = 0.9999
     var N = 1000;
     var delta = (tMax - tMin) / N;
-
+    var argMin = p / (p + lambda * (1-p));
     thresholds[0] = tMin;
-    right_thresholds[0] = threshold;
 
     for (var i = 1; i <= N; i++) {
         thresholds[i] = thresholds[i - 1] + delta;
-        right_thresholds[i] = right_thresholds[i - 1] + delta;
     }
 
 
-    maxValue = Math.max(pdf(mean1, mean1, var1), pdf(mean2, mean2, var2)) * 1.05;
+    maxValue = Math.max(cost(tMin, p, lambda), cost(tMax, p, lambda)) * 1.05; // changed to scale cost function
+    var minValue = Math.min(cost(thresholds, p, lambda)); // can replace with cost(argMin, p, lambda)
 
-    roc_curve_path.attr("d", roc_curve_line(thresholds));
+    cost_function_path.attr("d", cost_function_line(thresholds)); // changed to cost function
 
     xScaleDev.domain([tMin, tMax]);
 
@@ -126,53 +127,6 @@ function draw() {
     xAxDev.call(xAxisDev);
     yAxDev.call(yAxisDev);
 
-    var deviation1 = d3.svg.line()
-        .x(function (d) {
-            return xScaleDev(d);
-        })
-        .y(function (d) {
-            return yScaleDev(pdf(d, mean1, var1));
-        });
-
-    var deviation2 = d3.svg.line()
-        .x(function (d) {
-            return xScaleDev(d);
-        })
-        .y(function (d) {
-            return yScaleDev(pdf(d, mean2, var2));
-        });
-
-
-    pdf_path1.attr("d", deviation1(thresholds));
-
-    pdf_path2.attr("d", deviation2(thresholds));
-
-    var _area1 = d3.svg.area()
-        .x(function (d) {
-            return xScaleDev(d);
-        })
-        .y0(function (d) {
-            return yScaleDev(d * 0);
-        })
-        .y1(function (d) {
-            return yScaleDev(pdf(d, mean1, var1));
-        });
-
-    var _area2 = d3.svg.area()
-        .x(function (d) {
-            return xScaleDev(d);
-        })
-        .y0(function (d) {
-            return yScaleDev(d * 0);
-        })
-        .y1(function (d) {
-            return yScaleDev(pdf(d, mean2, var2));
-        });
-
-    pdf_area1.attr('d', _area1(right_thresholds));
-
-    pdf_area2.attr('d', _area2(right_thresholds));
-
     thresholdLine
         .attr("x1", xScaleDev(threshold))
         .attr("y1", yScaleDev(0))
@@ -180,8 +134,8 @@ function draw() {
         .attr("y2", yScaleDev(maxValue));
 
     circle
-        .attr("cx", xScale(1 - cdf(threshold, mean1, var1)))
-        .attr("cy", yScale(1 - cdf(threshold, mean2, var2)));
+        .attr("cx", xScale(argMin))
+        .attr("cy", yScale(minValue));
 }
 
 draw();
