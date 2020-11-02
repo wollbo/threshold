@@ -1,7 +1,7 @@
 // defining global constants
 var w = 345., h = 350., padding = 30.; // width height
 var p = 0.5, lambda = 1.;
-var threshold = 1.; // 0 or 1 ?
+// var threshold = 1.; // 0 or 1 ? - not used
 
 var tMin = 0;
 var tMax = 1;
@@ -125,12 +125,6 @@ function draw() {
 
     xAxDev.call(xAxisDev);
     yAxDev.call(yAxisDev);
-
-    thresholdLine
-        .attr("x1", xScaleDev(threshold))
-        .attr("y1", yScaleDev(0))
-        .attr("x2", xScaleDev(threshold))
-        .attr("y2", yScaleDev(maxValue));
 
     circle
         .attr("cx", xScale(argMin))
