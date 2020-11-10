@@ -1,0 +1,178 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage[a4paper, total={6in, 10in}]{geometry}
+\usepackage{amsmath}
+\setlength{\parindent}{0pt}
+
+
+
+\begin{document}
+\date{}
+\title{KL-$\lambda$-optimal post model threshold search}
+\maketitle
+\author{Hilding Wollbo}
+\vspace{-0.5cm}
+
+\section{KL-Divergence in Machine Learning}
+
+The Kullback-Leibler (KL) Divergence is an information theoretic concept used across many different probabilistic domains, including the field of Machine Learning. The KL-divergence is defined as
+
+\begin{equation}
+\textbf{KL}[p \vert\vert q] = -\int p(x) \log \frac{q(x)}{p(x)} dx
+\end{equation}
+
+and can be thought of as a metric describing the distance between two probability distributions $p$ and $q$. The KL-divergence is however not a true distance metric since it is neither symmetric in that $\textbf{KL}[p \vert\vert q] \neq \textbf{KL}[q \vert\vert p]$ nor does it satisfy the triangle inequality. \\
+
+In the case of logistic regression, one tries to fit model parameters $\varphi$ such that the computed probability $\hat{P}_\varphi(y=1\vert x) $ is as close to the true probability $P(y=1\vert x)$ as possible, for every point $x$ in the dataset. The difference between these two distributions can be quantified by their KL-divergence, and the problem can be reduced to finding the set of parameters $\varphi$ that minimize the average KL-distance of the dataset such that
+
+\begin{align}
+    \varphi: \underset{\varphi}{\arg\min} \Big \{ -\frac{1}{N} \sum_{n=1}^N P(y_n=1\vert X_n) \log \frac{\hat{P}_\varphi(y_n=1\vert X_n)}{P(y_n=1\vert X_n)} + P(y_n=0\vert X_n) \log \frac{\hat{P}_\varphi(y_n=0\vert X_n)}{P(y_n=0\vert X_n)} \Big \}
+\end{align}
+% relate to cross entropy and likelihood
+Noting that the minimization is performed with regard to $\varphi$ one can disregard the independent terms in the optimization, which leads to the equivalent problem of minimizing the average cross entropy loss
+
+\begin{align}
+    \varphi: \underset{\varphi}{\arg\min} \Big \{ -\frac{1}{N} \sum_{n=1}^N P(y_n=1\vert X_n) \log \hat{P}_\varphi(y_n=1\vert X_n) + P(y_n=0\vert X_n) \log \hat{P}_\varphi(y_n=0\vert X_n) \Big \}
+\end{align}
+
+This is also equivalent to the Maximum Likelihood formulation of finding the model parameters $\varphi$ which maximizes the probability that our model predictions $\hat{\mathbf{y}}$ gave rise to the set of observed true labels $\mathbf{y}$. 
+% EX from https://www.textbook.ds100.org/ch/17/classification_cost_justification.html
+
+\section{Post model threshold selection}
+
+In the case of binary classification, the trained model outputs a probability $f_\varphi (x) \in [0, 1]$ for each input $x$ which is then thresholded to either 0 or 1 by a threshold $\theta$. The default threshold is generally set to $\theta = 0.5$, which for well behaved and balanced datasets can be sufficient. However, the performance of the model predictions on the validation dataset can often be improved by shifting the threshold by maximizing a set of relevant metrics such as precision, recall, $F_1$-measure etc. depending on application. This view of threshold selection is generally to maximize the average performance of the model output for a specified metric $M$ by varying the threshold $\theta$:
+\begin{align}
+    \theta : \underset{\theta}{\arg\max}\{\frac{1}{N} \sum_{n=1}^N M(\theta(f_\varphi(x_n)), y_n\}
+\end{align}
+or equivalently, to minimize an expected total cost associated with the respective errors as
+\begin{align}
+	\label{eq:cost}
+    \theta : \underset{\theta}{\arg\min}\{\frac{1}{N} \sum_{n=1}^N \alpha y_n (1-\theta(f_\varphi(x_n)) )+ \beta (1-y_n) \theta(f_\varphi(x_n))\}
+\end{align}
+where $\alpha$ is the cost of a false negative and $\beta$ that of a false positive. However, as given by the prediction problem we have no way of knowing the true labels $y_n$. We could use the training data to create predictions and calculate an expected cost and select an optimal threshold on this data. Still, we would like to incorporate the information about the test predictions in our threshold selection.
+Instead, given that we can collect a sufficient set of unthresholded test predictions, we can use a probabilistic view and just consider the relation between the ideal predictor $\hat{y}^*$ and the true data labels $y$. One property that an ideal predictor must fulfill is that $\hat{y}^* \sim p(y)$, since all predictions are correct. That is, the proportions of each class in the predictions should equal those in the dataset labels. This essentially means that, instead of minimizing the expected total error of our predictions, we could try to find an optimal threshold $\theta^*$ after training by minimizing the distance between the distribution of true class labels $p(y)$ and the global distribution of thresholded predictions $q_\theta(\hat{y})$.
+
+\section{Binary classification}
+
+Binary classification is the most simple application of prediction in machine learning, but also the most fundamental, since every classification problem can be formulated as sets of binary prediction tasks or decision trees. For a given post model classification problem we have a set of true labels following a distribution $p(y)$ which can be estimated empirically directly from the training data (assuming that both training and test data follow the same distribution). Likewise for the predictions $\hat{y}$ we can define an empirical distribution given a threshold $\theta$ as
+\begin{align*}
+    q_\theta(\hat{y}) = \begin{cases} 1, & \text{w. p.} \ \frac{1}{N}\sum_{i=1}^N \theta(\hat{y}_i) \\[0.2cm]
+    0, &  \text{w. p.} \ 1 - \frac{1}{N}\sum_{i=1}^N \theta(\hat{y}_i) \end{cases}
+\end{align*}
+where $\theta(\hat{y}_i) = 1$ if $\hat{y}_i \geq \theta$, else 0.
+In the case of discrete class classification, the integral in the KL-divergence is replaced with a sum, such that
+\begin{equation}
+\textbf{KL}[p(y) \vert\vert q_\theta(\hat{y})] = -\sum p(y) \log \frac{q_\theta(\hat{y})}{p(y)}
+\end{equation}
+and for the binary classification problem we simply insert our binary probabilities
+\begin{align}
+\textbf{KL}[p(y) \vert\vert q_\theta(\hat{y})] = & \ - p(y=1) \log \frac{q_\theta(\hat{y}=1)}{p(y=1)} - p(y=0) \log \frac{q_\theta(\hat{y}=0)}{p(y=0)} \\ = & \label{eq:tprfpr} -p \log \underbrace{\frac{P(\hat{y}\geq \theta)}{p}}_\text{"fnr cost"} - (1-p) \log \underbrace{\frac{P(\hat{y} < \theta)}{1-p}}_\text{"fpr cost"}
+\end{align}
+In the binary case, each term is associated with an error cost depending on the amount of respective errors resulting from a given threshold, similar to the expected cost in Equation \ref{eq:cost}. With a too conservative threshold the probability of a negative in the global distribution of predictions $q_\theta (\hat{y}=0)$ is larger than that of the true negative labels $p(y=0)$, resulting in an increased amount of false negatives. This in turn implies that the proportion of predicted positives must be smaller than the true amount of positives, $q_\theta(\hat{y} = 1) < p(y=1)$. That is, if
+\begin{align*}
+    q_\theta(\hat{y}=0) &> p(y=0) \iff \\
+    \iff TN + FN &> \underbrace{TN+FP}_{N} \rightarrow FN>FP
+\end{align*}
+Vice versa holds for the case when $P(\hat{y}=1) > p(y=1)$, where the proportion of predicted positives is larger than that of the true distribution.
+However, the cost associated with a false positive error is generally different than that of a false negative, this relation can be captured by a constant $\lambda$. One may then define the threshold optimization problem as:  
+\begin{align}
+    \theta: \underset{\theta}{\arg \min} \Big\{ - p \log \frac{P(\hat{y}\geq \theta)}{p} - \lambda (1-p) \log \frac{P(\hat{y} < \theta)}{1-p} \Big \}
+\end{align}
+For $\lambda>1$, false positives are associated with a higher cost during minimization (in relation to their prevalence in the true labels).
+Again, the optimization is performed with regard to $\theta$, so the independent terms can be disregarded, leading to the equivalent optimization problem of minimizing the weighted cross entropy loss between the two distributions as
+\begin{align}
+\label{eq:threshold} 
+\theta: \underset{\theta}{\arg \min} \Big\{ - p \log P(\hat{y}\geq \theta) - \lambda (1-p) \log P(\hat{y} < \theta) \Big \} 
+\end{align}.
+For brevity, we set $q = P(\hat{y}\geq \theta)$ and the minimization can be expressed as
+\begin{align*}
+& \ \underset{\theta}{\arg \min} \Big\{ - p \log q - \lambda (1-p) \log (1-q) \Big \} = \\
+=& \ \underset{\theta}{\arg \min} \Big\{ - \log q^p - \log (1-q)^{\lambda(1-p)} \Big \} \\
+=& \ \underset{\theta}{\arg \min} \Big\{ - \log q^p (1-q)^{\lambda(1-p)} \Big \} \\
+=& \ \underset{\theta}{\arg \min} \Big\{ - q^p (1-q)^{\lambda(1-p)} \Big \} \\
+\end{align*}.
+Deriving and solving for zero, we have the expression
+\begin{align*}
+\partial_q q^p (1-q)^{\lambda(1-p)} =& -\lambda(1-p)(1-q)^{\lambda(1-p)-1}q^p + pq^{p-1}(1-q)^{\lambda(1-p)} \\
+=& \ (1-q)^{\lambda(1-p)-1}(-\lambda(1-p)q^p + p(1-q)q^{p-1}) \\
+=& \ 0
+\end{align*}
+leading to the closed form solution
+\begin{align*}
+p(1-q)q^{p-1} =& \lambda(1-p)q^p \\ \rightarrow q =& \frac{p}{p + \lambda(1-p)}
+\end{align*}.
+In this way, we arrive at a structured way of quantifying and minimizing the tradeoff between probability of errors and the associated costs of each error.
+\section{Practical examples}
+In order to illustrate how this threshold search can be used, a few simple cases are studied for known binary datasets.
+\subsection{Setup}
+In order to generate predictions, a small decision tree model using LightGBM was implemented using default parameters. 
+\subsection{Breast Cancer Wisconsin}
+
+\subsection{German Credit Data}
+% \newpage
+% \subsection{Extension to the Multi-label setup}
+% The Multi-label classification task can essentially, from the post model perspective, be viewed as a joint set of binary classification tasks, assuming that each label is independent and mutually nonexclusive. Similarly to the binary case, one can calculate empirical dataset probabilities for each of the $M$ separate labels such that
+% \begin{align*}
+%     p(y_1 = 1) &= p_1 \\
+%     p(y_2 = 1) &= p_2 \\
+%     \vdots & \\
+%     p(y_M = 1) &= p_M
+% \end{align*}
+
+% This leads to the set of KL-divergence equations
+
+% \begin{align*}
+% \textbf{KL}[p(\mathbf{y})\vert\vert q_\Theta(\mathbf{\hat{y}})] = - \sum p(\mathbf{y})\log \frac{q_\Theta(\hat{\mathbf{y}})}{p(\mathbf{y})} =
+% \left [ \begin{aligned}
+%    \left. - p_1 \log P(\hat{y}_1\geq \theta_1) -& \lambda_1 (1-p_1) \log P(\hat{y}_1 < \theta_1) \\ \right.
+%     \left.- p_2 \log P(\hat{y}_2\geq \theta_2) -& \lambda_2 (1-p_2) \log P(\hat{y}_2 < \theta_2) \\ \right.
+%     \left.\vdots& \\ \right.
+%     \left.- p_M \log P(\hat{y}_M\geq \theta_M) -& \lambda_M (1-p_M) \log P(\hat{y}_M < \theta_M)  \\ \right.  \end{aligned} \right ]
+% \end{align*}
+
+% Defining the set of $M$ thresholds as
+% \begin{align}
+% \label{eq:thresholdset}
+%     \Theta_1^M = \bigcup\limits_{i=1}^M \theta_i
+% \end{align}
+
+% one would then try to find $\Theta_1^M$ by individually calculating the threshold $\theta_i$ for each class distribution $p(y_i)$, prediction distribution $q_\theta(\hat{y}_i)$ and error cost factor $\lambda_i$ according to equation (\ref{eq:threshold}).
+% \subsubsection{Ranking Predictions}
+% In some applications it can be desirable to rank the different positive label predictions according to their confidence when there are several positive predicted class labels. In a medical setting, for example, this could correspond to deciding which indicated disease in a multi-class medical test to treat first. The predictions can be weighed in many different ways. It would be reasonable to assign confidence in the predicted class label with regard to the overall distribution of possible samples in that specific class, as well as incorporation of how confident the specific class prediction is in relation to the average class prediction for the label, since it can be assumed that the distances between threshold and prediction are generally different between labels. In this way, one weighs both information about the distribution together with the quality of the individual prediction.
+% \\
+% Assuming that the probability of a correct thresholded prediction is directly related to the distance between the raw positive prediction $\hat{y}$ and the threshold $\theta$, one can define a distance factor simply as $\vert\vert \theta-\hat{y} \vert\vert $, where $\hat{y} \geq \theta$. 
+% We can also create a scale factor of the confidence of the $i$:th label predictions in relation to the other labels by calculating the average distance factor for each label as
+% \begin{align}
+%     \Delta_i =  \frac{1}{L_i}\sum_{l=1}^{L_i} \vert\vert \theta_i-\hat{y}_i^l \vert\vert
+% \end{align}
+% where $[\hat{y}_i^1, \hat{y}_i^2, \dots , \hat{y}_i^{L_i}] $ is the set of $i$:th label predictions greater than the threshold $\theta_i$. Finally, we can add a factor related to the probability of a positive sample in the distribution simply as the empirical mean of each label in the dataset as
+% \begin{align*}
+%     p_i = p(y_i = 1) = \frac{1}{N}\sum_{n=1}^N y_i^n .
+% \end{align*}
+% Thus, for each label $i$ and predicted positive sample $\hat{y}_i$ we can define the confidence score as
+
+% \begin{align*}
+%     c_i = p_i \frac{\vert\vert \theta_i-\hat{y}_i \vert\vert}{\Delta_i}
+% \end{align*}
+% and rank the confidence of each label $i$ for every positive prediction $\hat{y}_i$ in descending order.
+
+% \subsection{Special Case: Multiclass setup}
+
+% The Multiclass classification problem is less straightforward than the binary and multi-label tasks.
+% Normally for a multiclass problem, one determines class prediction by calculating the soft-max of the output and selects the class index with the largest probability. If we instead retain our output as a set of seemingly independent sigmoids, we can apply similar logic as in the previous sections. Here, one can calculate the empirical dataset probabilities $[p_1, p_2 \dots p_M]$ as before with the added constraint that
+% \begin{align*}
+%     \sum_{i=1}^M p_i = 1
+% \end{align*}
+
+% One simple way to handle the case where two or more probability outputs are above their thresholds is to define a new class $M+1$ representing an ambiguous output. With the definition of the joint set of thresholds according to equation (\ref{eq:thresholdset}), we arrive at the post model threshold classification problem
+
+% \begin{align}
+%     P(\Theta (\mathbf{\hat{y}})) & = \begin{cases}
+%     j,& \text{if} \ \hat{y}_j \geq \theta_j \ \cup \ \hat{y}_i < \theta_i \ \forall \ {i\neq j} \\ % originally bigcup
+%     M+1,& \text{otherwise}
+%     \end{cases}
+% \end{align}
+
+% This naturally lends itself as a more conservative classifier, in that the ambiguous class naturally handles many of the samples that would be erroneously classified by a soft-max classifier. However, this setup is also guaranteed to produce false negatives that would be correctly classified by the softmax-classifier. 
+
+\end{document}
