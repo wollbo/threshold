@@ -9,8 +9,8 @@
 \begin{document}
 \date{}
 \title{KL-$\lambda$-optimal post model threshold search}
-\maketitle
 \author{Hilding Wollbo}
+\maketitle
 \vspace{-0.5cm}
 
 \section{KL-Divergence in Machine Learning}
@@ -98,10 +98,44 @@ Deriving and solving for zero, we have the expression
 =& \ 0
 \end{align*}
 leading to the closed form solution
-\begin{align*}
-p(1-q)q^{p-1} =& \lambda(1-p)q^p \\ \rightarrow q =& \frac{p}{p + \lambda(1-p)}
-\end{align*}.
+\begin{align}
+p(1-q)q^{p-1} =& \lambda(1-p)q^p \\
+\label{eq:pos}
+\rightarrow q =& \frac{p}{p + \lambda(1-p)}
+\end{align}.
+Here, $q$ corresponds to a resulting proportion of positive predictions associated with a certain threshold $\theta$ when applied to the raw predictions.
 In this way, we arrive at a structured way of quantifying and minimizing the tradeoff between probability of errors and the associated costs of each error.
+
+\subsection{Example}
+
+We may also find specific, analytical solutions to this threshold optimization problem in cases where the distribution of test predictions is known.
+Given that the set of predictions is modelled by the following, exponential mixture distribution
+
+\begin{align*}
+    f_0(x\vert y=0;\lambda_0) =& \frac{\lambda_0}{Z_0}e^{-\lambda_0 x} = \frac{\lambda_0}{1-e^{-\lambda_0}}e^{-\lambda_0 x} \\
+    f_1(x\vert y=1;\lambda_1) =& \frac{\lambda_1}{Z_1}e^{\lambda_1 x} = \frac{-\lambda_1}{1-e^{\lambda_1}}e^{\lambda_1 x}\\
+    f (x;\lambda_0,\lambda_1,\alpha) =& (1-\alpha)\frac{\lambda_0}{1-e^{-\lambda_0}}e^{-\lambda_0 x} - \alpha\frac{\lambda_1}{1-e^{\lambda_1}}e^{\lambda_1 x} % consider changing order of alpha=1-alpha
+\end{align*}
+we can find the optimal threshold by finding the point where the proportion of expected positives is equal to the one found in Equation \ref{eq:pos}. We recognize that $\alpha = p$ and set
+
+\begin{align}
+    \frac{p}{p+\lambda(1-p)} = & \int_{q}^1 f(x;\lambda_0, \lambda_1, p) dx = \\
+    = & \int_{q}^1 \frac{1-p}{1-e^{-\lambda_0}}\lambda_0e^{-\lambda_0x} - \frac{p}{1-e^{\lambda_1}}\lambda_1e^{\lambda_1x} dx = \\
+    = & \frac{1-p}{1-e^{-\lambda_0}}(e^{-\lambda_0}-e^{-\lambda_0 q}) - \frac{p}{1-e^{\lambda_1}}(e^{\lambda_1}-e^{\lambda_1 q})
+\end{align}.
+
+Rearranging, we have
+
+\begin{align*}
+    \frac{p}{1-e^{\lambda_1}}e^{\lambda_1 q} - \frac{1-p}{1-e^{-\lambda_0}}e^{-\lambda_0 q} =& \frac{p}{p+\lambda(1-p)} + \frac{p}{1-e^{\lambda_1}}e^{\lambda_1} - \frac{1-p}{1-e^{-\lambda_0}}e^{-\lambda_0}
+\end{align*}
+
+Then, taking the logarithm, we can find a closed form solution as
+
+\begin{align*}
+    q(\lambda_1+\lambda_0) + \log\frac{p}{1-e^{\lambda_1}} + \log\frac{p}{1-e^{-\lambda_0}} =& \ \log\frac{p}{p+\lambda(1-p)} + \lambda_1 + \log\frac{p}{1-e^{\lambda_1}} + \lambda_0 + \log\frac{p}{1-e^{-\lambda_0}} \\ \rightarrow q =& \ 1 + \frac{1}{\lambda_1 + \lambda_0} \log\frac{p}{p+\lambda(1-p)} \\ =& \ 1 - \log \left ( \frac{p}{p+\lambda(1-p)}\right ) ^{\lambda_1+\lambda_0} 
+\end{align*}.
+
 \section{Practical examples}
 In order to illustrate how this threshold search can be used, a few simple cases are studied for known binary datasets.
 \subsection{Setup}
