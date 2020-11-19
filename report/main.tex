@@ -2,6 +2,7 @@
 \usepackage[utf8]{inputenc}
 \usepackage[a4paper, total={6in, 10in}]{geometry}
 \usepackage{amsmath}
+\usepackage{pgfplots}
 \setlength{\parindent}{0pt}
 
 
@@ -106,43 +107,47 @@ p(1-q)q^{p-1} =& \lambda(1-p)q^p \\
 Here, $q$ corresponds to a resulting proportion of positive predictions associated with a certain threshold $\theta$ when applied to the raw predictions.
 In this way, we arrive at a structured way of quantifying and minimizing the tradeoff between probability of errors and the associated costs of each error.
 
+% Could be interesting to plot logarithmic x-axis of q as a function of lambda for a few different p
+
 \subsection{Example}
 
-We may also find specific, analytical solutions to this threshold optimization problem in cases where the distribution of test predictions is known.
+We may also find specific solutions to this threshold optimization problem in cases where the distribution of test predictions is known but the actual test predictions are not.
 Given that the set of predictions is modelled by the following, exponential mixture distribution
 
 \begin{align*}
-    f_0(x\vert y=0;\lambda_0) =& \frac{\lambda_0}{Z_0}e^{-\lambda_0 x} = \frac{\lambda_0}{1-e^{-\lambda_0}}e^{-\lambda_0 x} \\
-    f_1(x\vert y=1;\lambda_1) =& \frac{\lambda_1}{Z_1}e^{\lambda_1 x} = \frac{-\lambda_1}{1-e^{\lambda_1}}e^{\lambda_1 x}\\
-    f (x;\lambda_0,\lambda_1,\alpha) =& (1-\alpha)\frac{\lambda_0}{1-e^{-\lambda_0}}e^{-\lambda_0 x} - \alpha\frac{\lambda_1}{1-e^{\lambda_1}}e^{\lambda_1 x} % consider changing order of alpha=1-alpha
+    f_0(x\vert y=0;\beta_0) =& \frac{\beta_0}{Z_0}e^{-\beta_0 x} = \frac{\beta_0}{1-e^{-\beta_0}}e^{-\beta_0 x} \\
+    f_1(x\vert y=1;\beta_1) =& \frac{\beta_1}{Z_1}e^{\beta_1 x} = \frac{-\beta_1}{1-e^{\beta_1}}e^{\beta_1 x}\\
+    f (x;\beta_0,\beta_1,\alpha) =& (1-\alpha)\frac{\beta_0}{1-e^{-\beta_0}}e^{-\beta_0 x} - \alpha\frac{\beta_1}{1-e^{\beta_1}}e^{\beta_1 x} % consider changing order of alpha=1-alpha
 \end{align*}
-we can find the optimal threshold by finding the point where the proportion of expected positives is equal to the one found in Equation \ref{eq:pos}. We recognize that $\alpha = p$ and set
+we can find the optimal threshold $\theta$ by finding the point where the proportion of expected predicted positives is equal to the one found in Equation \ref{eq:pos}. We recognize that $\alpha = p$ and set
 
 \begin{align}
-    \frac{p}{p+\lambda(1-p)} = & \int_{q}^1 f(x;\lambda_0, \lambda_1, p) dx = \\
-    = & \int_{q}^1 \frac{1-p}{1-e^{-\lambda_0}}\lambda_0e^{-\lambda_0x} - \frac{p}{1-e^{\lambda_1}}\lambda_1e^{\lambda_1x} dx = \\
-    = & \frac{1-p}{1-e^{-\lambda_0}}(e^{-\lambda_0}-e^{-\lambda_0 q}) - \frac{p}{1-e^{\lambda_1}}(e^{\lambda_1}-e^{\lambda_1 q})
+    \frac{p}{p+\lambda(1-p)} = & \int_{\theta}^1 f(x;\beta_0, \beta_1, p) dx = \\
+    = & \int_{\theta}^1 \frac{1-p}{1-e^{-\beta_0}}\beta_0e^{-\beta_0x} - \frac{p}{1-e^{\beta_1}}\beta_1e^{\beta_1x} dx = \\
+    = & \frac{1-p}{1-e^{-\beta_0}}(e^{-\beta_0}-e^{-\beta_0 \theta}) - \frac{p}{1-e^{\beta_1}}(e^{\beta_1}-e^{\beta_1 \theta})
 \end{align}.
 
-Rearranging, we have
+Rearranging and setting $\beta_1 = \beta_0 = \beta$ for simplicity, we can define the function
 
-\begin{align*}
-    \frac{p}{1-e^{\lambda_1}}e^{\lambda_1 q} - \frac{1-p}{1-e^{-\lambda_0}}e^{-\lambda_0 q} =& \frac{p}{p+\lambda(1-p)} + \frac{p}{1-e^{\lambda_1}}e^{\lambda_1} - \frac{1-p}{1-e^{-\lambda_0}}e^{-\lambda_0}
-\end{align*}
+\begin{align}
+    f(\theta) =& \ \frac{e^{-\beta \theta} (e^\beta-e^{\beta \theta}) (p(e^{\beta \theta}-1) + 1)}{e^{\beta}-1} - \frac{p}{p+\lambda(1-p)} = 0 \\
+    f'(\theta) =& \ \frac{\beta e^{-\beta \theta} ((p-1) e^\beta - p e^{2\beta \theta})}{e^{\beta}-1} \\
+\end{align}
 
-Then, taking the logarithm, we can find a closed form solution as
-
-\begin{align*}
-    q(\lambda_1+\lambda_0) + \log\frac{p}{1-e^{\lambda_1}} + \log\frac{p}{1-e^{-\lambda_0}} =& \ \log\frac{p}{p+\lambda(1-p)} + \lambda_1 + \log\frac{p}{1-e^{\lambda_1}} + \lambda_0 + \log\frac{p}{1-e^{-\lambda_0}} \\ \rightarrow q =& \ 1 + \frac{1}{\lambda_1 + \lambda_0} \log\frac{p}{p+\lambda(1-p)} \\ =& \ 1 - \log \left ( \frac{p}{p+\lambda(1-p)}\right ) ^{\lambda_1+\lambda_0} 
-\end{align*}.
+Using Newton's Method we can find an approximate solution by iterating
+\begin{align}
+    \theta_{n+1} =& \ \theta_n - \frac{f(\theta_n)}{f'(\theta_n)}
+\end{align}
+until convergence.
 
 \section{Practical examples}
 In order to illustrate how this threshold search can be used, a few simple cases are studied for known binary datasets.
 \subsection{Setup}
 In order to generate predictions, a small decision tree model using LightGBM was implemented using default parameters. 
 \subsection{Breast Cancer Wisconsin}
-
+\input{figures/thresholds_breastcancer.pgf}
 \subsection{German Credit Data}
+\input{figures/thresholds_credit.pgf}
 % \newpage
 % \subsection{Extension to the Multi-label setup}
 % The Multi-label classification task can essentially, from the post model perspective, be viewed as a joint set of binary classification tasks, assuming that each label is independent and mutually nonexclusive. Similarly to the binary case, one can calculate empirical dataset probabilities for each of the $M$ separate labels such that
@@ -158,7 +163,7 @@ In order to generate predictions, a small decision tree model using LightGBM was
 % \begin{align*}
 % \textbf{KL}[p(\mathbf{y})\vert\vert q_\Theta(\mathbf{\hat{y}})] = - \sum p(\mathbf{y})\log \frac{q_\Theta(\hat{\mathbf{y}})}{p(\mathbf{y})} =
 % \left [ \begin{aligned}
-%    \left. - p_1 \log P(\hat{y}_1\geq \theta_1) -& \lambda_1 (1-p_1) \log P(\hat{y}_1 < \theta_1) \\ \right.
+%    \left. - p_1 \log P(\hat{y}_1\geq \theta_1) -& \beta_1 (1-p_1) \log P(\hat{y}_1 < \theta_1) \\ \right.
 %     \left.- p_2 \log P(\hat{y}_2\geq \theta_2) -& \lambda_2 (1-p_2) \log P(\hat{y}_2 < \theta_2) \\ \right.
 %     \left.\vdots& \\ \right.
 %     \left.- p_M \log P(\hat{y}_M\geq \theta_M) -& \lambda_M (1-p_M) \log P(\hat{y}_M < \theta_M)  \\ \right.  \end{aligned} \right ]
@@ -210,3 +215,4 @@ In order to generate predictions, a small decision tree model using LightGBM was
 % This naturally lends itself as a more conservative classifier, in that the ambiguous class naturally handles many of the samples that would be erroneously classified by a soft-max classifier. However, this setup is also guaranteed to produce false negatives that would be correctly classified by the softmax-classifier. 
 
 \end{document}
+
