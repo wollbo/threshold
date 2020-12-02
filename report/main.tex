@@ -3,6 +3,8 @@
 \usepackage[a4paper, total={6in, 10in}]{geometry}
 \usepackage{amsmath}
 \usepackage{pgfplots}
+\usepackage{hyperref}
+\usepackage{graphicx}
 \setlength{\parindent}{0pt}
 
 
@@ -101,8 +103,8 @@ Deriving and solving for zero, we have the expression
 leading to the closed form solution
 \begin{align}
 p(1-q)q^{p-1} =& \lambda(1-p)q^p \\
-\label{eq:pos}
 \rightarrow q =& \frac{p}{p + \lambda(1-p)}
+\label{eq:pos}
 \end{align}.
 Here, $q$ corresponds to a resulting proportion of positive predictions associated with a certain threshold $\theta$ when applied to the raw predictions.
 In this way, we arrive at a structured way of quantifying and minimizing the tradeoff between probability of errors and the associated costs of each error.
@@ -131,23 +133,44 @@ Rearranging and setting $\beta_1 = \beta_0 = \beta$ for simplicity, we can defin
 
 \begin{align}
     f(\theta) =& \ \frac{e^{-\beta \theta} (e^\beta-e^{\beta \theta}) (p(e^{\beta \theta}-1) + 1)}{e^{\beta}-1} - \frac{p}{p+\lambda(1-p)} = 0 \\
-    f'(\theta) =& \ \frac{\beta e^{-\beta \theta} ((p-1) e^\beta - p e^{2\beta \theta})}{e^{\beta}-1} \\
+    f'(\theta) =& \ \frac{\beta e^{-\beta \theta} ((p-1) e^\beta - p e^{2\beta \theta})}{e^{\beta}-1}
 \end{align}
-
-Using Newton's Method we can find an approximate solution by iterating
+Using Newton's Method we can find an approximate solution to $\theta$ by iterating
 \begin{align}
     \theta_{n+1} =& \ \theta_n - \frac{f(\theta_n)}{f'(\theta_n)}
 \end{align}
-until convergence.
-
+until convergence. An example of this method is shown in Figure
+\begin{figure}
+    \centering
+    \scalebox{.8}{\input{figures/thresholds_credit_exponential_5.pgf}}
+    \caption{Thresholds for an exponential test prediction distribution with parameter $\beta = 5$ in a dataset of 70 \% positive examples.}
+\end{figure}
 \section{Practical examples}
 In order to illustrate how this threshold search can be used, a few simple cases are studied for known binary datasets.
 \subsection{Setup}
-In order to generate predictions, a small decision tree model using LightGBM was implemented using default parameters. 
+In order to generate predictions, a small decision tree model using LightGBM was implemented with default parameters. The project was implemented in Python using the \texttt{LGBMClassifier} package, as well as \texttt{sklearn}, \texttt{numpy} and \texttt{pandas} for data manipulation. The code used to produce the results is available at \url{https://github.com/wollbo/threshold}.
 \subsection{Breast Cancer Wisconsin}
-\input{figures/thresholds_breastcancer.pgf}
+\begin{figure}
+    \centering
+    \scalebox{.8}{\input{figures/thresholds_breastcancer.pgf}}
+    \caption{Thresholds and predictions generated for the Wisconsin Breast Cancer dataset, this is a very easy dataset to classify}
+\end{figure}
 \subsection{German Credit Data}
-\input{figures/thresholds_credit.pgf}
+
+\begin{figure}
+    \centering
+    \scalebox{.8}{\input{figures/thresholds_credit.pgf}}
+    \caption{Thresholds and predictions generated for the German Credit Data dataset}
+\end{figure}
+
+\subsection{KDD CUP 2009 - Churn}
+
+\begin{figure}
+    \centering
+    \scalebox{.8}{\input{figures/thresholds_orange-small.pgf}}
+    \caption{Thresholds and predictions generated for the KDD Cup 2009 Churn dataset}
+\end{figure}
+
 % \newpage
 % \subsection{Extension to the Multi-label setup}
 % The Multi-label classification task can essentially, from the post model perspective, be viewed as a joint set of binary classification tasks, assuming that each label is independent and mutually nonexclusive. Similarly to the binary case, one can calculate empirical dataset probabilities for each of the $M$ separate labels such that
