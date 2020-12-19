@@ -1,2 +1,2 @@
 # threshold
-A structured way of finding a tradeoff between positive and negative predictions in a binary setting. Given a set of predicted probabilities, an estimation of class balance and the respective costs associated with false positives/negatives, we can find an optimal threshold by minimizing the distance between our predictions and the true distribution.
+A novel and structured way of finding the tradeoff between positive and negative predictions in a binary setting is defined and explored. Given a set of predicted probabilities and an estimation of the class balance and the respective costs associated with false positives/negatives, we can find an optimal threshold by minimizing the weighted  between our predictions and the true distribution.
