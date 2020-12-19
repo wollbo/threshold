@@ -127,7 +127,7 @@ we can find the optimal threshold $\theta$ by finding the point where the propor
     \frac{p}{p+\lambda(1-p)} = & \int_{\theta}^1 f(x;\beta_0, \beta_1, p) dx = \\
     = & \int_{\theta}^1 \frac{1-p}{1-e^{-\beta_0}}\beta_0e^{-\beta_0x} - \frac{p}{1-e^{\beta_1}}\beta_1e^{\beta_1x} dx = \\
     = & \frac{1-p}{1-e^{-\beta_0}}(e^{-\beta_0}-e^{-\beta_0 \theta}) - \frac{p}{1-e^{\beta_1}}(e^{\beta_1}-e^{\beta_1 \theta})
-\end{align}.
+\end{align}
 
 Rearranging and setting $\beta_1 = \beta_0 = \beta$ for simplicity, we can define the function
 
@@ -139,11 +139,12 @@ Using Newton's Method we can find an approximate solution to $\theta$ by iterati
 \begin{align}
     \theta_{n+1} =& \ \theta_n - \frac{f(\theta_n)}{f'(\theta_n)}
 \end{align}
-until convergence. An example of this method is shown in Figure
+until convergence. An example of this method is shown in Figure \ref{fig:exp5}.
 \begin{figure}
     \centering
     \scalebox{.8}{\input{figures/thresholds_credit_exponential_5.pgf}}
     \caption{Thresholds for an exponential test prediction distribution with parameter $\beta = 5$ in a dataset of 70 \% positive examples.}
+    \label{fig:exp5}
 \end{figure}
 \section{Practical examples}
 In order to illustrate how this threshold search can be used, a few simple cases are studied for known binary datasets.
@@ -153,14 +154,14 @@ In order to generate predictions, a small decision tree model using LightGBM was
 \begin{figure}
     \centering
     \scalebox{.8}{\input{figures/thresholds_breastcancer.pgf}}
-    \caption{Thresholds and predictions generated for the Wisconsin Breast Cancer dataset, this is a very easy dataset to classify}
+    \caption{Thresholds and predictions generated for the Wisconsin Breast Cancer dataset, 64 \% positive samples. This is a very easy dataset to classify.}
 \end{figure}
 \subsection{German Credit Data}
 
 \begin{figure}
     \centering
     \scalebox{.8}{\input{figures/thresholds_credit.pgf}}
-    \caption{Thresholds and predictions generated for the German Credit Data dataset}
+    \caption{Thresholds and predictions generated for the German Credit Data dataset, 71 \% positive samples.}
 \end{figure}
 
 \subsection{KDD CUP 2009 - Churn}
@@ -168,7 +169,7 @@ In order to generate predictions, a small decision tree model using LightGBM was
 \begin{figure}
     \centering
     \scalebox{.8}{\input{figures/thresholds_orange-small.pgf}}
-    \caption{Thresholds and predictions generated for the KDD Cup 2009 Churn dataset}
+    \caption{Thresholds and predictions generated for the KDD Cup 2009 Churn dataset, 7 \% positive samples. This is a hard dataset to classify.}
 \end{figure}
 
 % \newpage

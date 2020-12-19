@@ -54,6 +54,7 @@ if __name__ == '__main__':
     x_train, x_test, y_train, y_test = model_selection.train_test_split(x, y)
 
     p = sum(y_train) / len(y_train)  # note: varying data structure between datasets
+    print(f'p = {p}')
 
     model = make_pipeline(StandardScaler(), LGBMClassifier())
     model.fit(x_train, y_train)
@@ -69,14 +70,17 @@ if __name__ == '__main__':
     if exp_pred:
         span = np.linspace(start=0.0, stop=1.0, endpoint=True)
         mix, f0, f1 = core.exponential_mixture(span, p=p, l1=exp_pred, l0=exp_pred)
-        plt.plot(span, mix)
-        plt.plot(span, f0)
-        plt.plot(span, f1)
+        plt.xlim(0, 1)
+        plt.ylim(0, 3.5)
+        plt.xlabel("$x$")
+        plt.ylabel("$f(x)$")
+        # plt.plot(span, f0)  # plotting additional densities clutters the image
+        # plt.plot(span, f1)
         for idx, a in enumerate(lambdas):
             plt.axvline(x=core.exponential_threshold(p, alpha=a, l=exp_pred), c=colors[-idx], lw=2)
         plt.legend(labels=[f'$\lambda = {a}$' for a in lambdas])
-        print(f'p = {p}')
-        print(1-core.kl_threshold(p, lambdas[0]))
+        plt.plot(span, mix, c=colors[1])  # set y-span 0 - 3.5
+        
         plt.savefig(f'report/figures/thresholds_{dataset}_exponential_{exp_pred}.pgf') if pgf else plt.show()
         plt.close(fig='all')
 
