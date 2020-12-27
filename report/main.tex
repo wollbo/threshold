@@ -52,7 +52,7 @@ or equivalently, to minimize an expected total cost associated with the respecti
 	\label{eq:cost}
     \theta : \underset{\theta}{\arg\min}\{\frac{1}{N} \sum_{n=1}^N \alpha y_n (1-\theta(f_\varphi(x_n)) )+ \beta (1-y_n) \theta(f_\varphi(x_n))\}
 \end{align}
-where $\alpha$ is the cost of a false negative and $\beta$ that of a false positive. However, as given by the prediction problem we have no way of knowing the true labels $y_n$. We could use the training data to create predictions and calculate an expected cost and select an optimal threshold on this data. Still, we would like to incorporate the information about the test predictions in our threshold selection.
+where $\alpha$ is the cost of a false negative and $\beta$ that of a false positive. However, as given by the prediction problem we have no way of knowing the true labels $y_n$. We could use the training data to create predictions and calculate an expected cost and select an optimal threshold on this data. Still, we would like to incorporate the information about the test predictions in our threshold selection. % this section needs some polishing
 Instead, given that we can collect a sufficient set of unthresholded test predictions, we can use a probabilistic view and just consider the relation between the ideal predictor $\hat{y}^*$ and the true data labels $y$. One property that an ideal predictor must fulfill is that $\hat{y}^* \sim p(y)$, since all predictions are correct. That is, the proportions of each class in the predictions should equal those in the dataset labels. This essentially means that, instead of minimizing the expected total error of our predictions, we could try to find an optimal threshold $\theta^*$ after training by minimizing the distance between the distribution of true class labels $p(y)$ and the global distribution of thresholded predictions $q_\theta(\hat{y})$.
 
 \section{Binary classification}
@@ -65,47 +65,46 @@ Binary classification is the most simple application of prediction in machine le
 where $\theta(\hat{y}_i) = 1$ if $\hat{y}_i \geq \theta$, else 0.
 In the case of discrete class classification, the integral in the KL-divergence is replaced with a sum, such that
 \begin{equation}
-\textbf{KL}[p(y) \vert\vert q_\theta(\hat{y})] = -\sum p(y) \log \frac{q_\theta(\hat{y})}{p(y)}
+\textbf{KL}[p(y) \vert\vert q_\theta(\hat{y})] = -\sum p(y) \log \frac{q_\theta(\hat{y})}{p(y)}\text{,}
 \end{equation}
 and for the binary classification problem we simply insert our binary probabilities
 \begin{align}
-\textbf{KL}[p(y) \vert\vert q_\theta(\hat{y})] = & \ - p(y=1) \log \frac{q_\theta(\hat{y}=1)}{p(y=1)} - p(y=0) \log \frac{q_\theta(\hat{y}=0)}{p(y=0)} \\ = & \label{eq:tprfpr} -p \log \underbrace{\frac{P(\hat{y}\geq \theta)}{p}}_\text{"fnr cost"} - (1-p) \log \underbrace{\frac{P(\hat{y} < \theta)}{1-p}}_\text{"fpr cost"}
+\textbf{KL}[p(y) \vert\vert q_\theta(\hat{y})] = & \ - p(y=1) \log \frac{q_\theta(\hat{y}=1)}{p(y=1)} - p(y=0) \log \frac{q_\theta(\hat{y}=0)}{p(y=0)} \\ = & \label{eq:tprfpr} -p \log \underbrace{\frac{P(\hat{y}\geq \theta)}{p}}_\text{"fnr cost"} - (1-p) \log \underbrace{\frac{P(\hat{y} < \theta)}{1-p}}_\text{"fpr cost"} \text{.}
 \end{align}
-In the binary case, each term is associated with an error cost depending on the amount of respective errors resulting from a given threshold, similar to the expected cost in Equation \ref{eq:cost}. With a too conservative threshold the probability of a negative in the global distribution of predictions $q_\theta (\hat{y}=0)$ is larger than that of the true negative labels $p(y=0)$, resulting in an increased amount of false negatives. This in turn implies that the proportion of predicted positives must be smaller than the true amount of positives, $q_\theta(\hat{y} = 1) < p(y=1)$. That is, if
+In the binary case, each term is associated with an error cost depending on the amount of respective errors resulting from a given threshold, similar to the expected cost in Equation \ref{eq:cost}. With a too conservative threshold the probability of a negative in the global distribution of predictions $q_\theta (\hat{y}=0)$ is larger than that of the true negative labels $p(y=0)$, resulting in an increased amount of false negatives. This in turn implies that the proportion of predicted positives must be smaller than the true amount of positives, $q_\theta(\hat{y} = 1) < p(y=1)$. That is, the classifications follow
 \begin{align*}
-    q_\theta(\hat{y}=0) &> p(y=0) \iff \\
-    \iff TN + FN &> \underbrace{TN+FP}_{N} \rightarrow FN>FP
+    q_\theta(\hat{y}=0) > p(y=0) \iff  TN + FN > \underbrace{TN+FP}_{N} \rightarrow FN>FP \text{.}
 \end{align*}
-Vice versa holds for the case when $P(\hat{y}=1) > p(y=1)$, where the proportion of predicted positives is larger than that of the true distribution.
+Vice versa holds for the case when $q_\theta(\hat{y}=1) > p(y=1)$, where the proportion of predicted positives is larger than that of the true distribution.
 However, the cost associated with a false positive error is generally different than that of a false negative, this relation can be captured by a constant $\lambda$. One may then define the threshold optimization problem as:  
 \begin{align}
     \theta: \underset{\theta}{\arg \min} \Big\{ - p \log \frac{P(\hat{y}\geq \theta)}{p} - \lambda (1-p) \log \frac{P(\hat{y} < \theta)}{1-p} \Big \}
 \end{align}
 For $\lambda>1$, false positives are associated with a higher cost during minimization (in relation to their prevalence in the true labels).
-Again, the optimization is performed with regard to $\theta$, so the independent terms can be disregarded, leading to the equivalent optimization problem of minimizing the weighted cross entropy loss between the two distributions as
+Again, the optimization is performed with regard to $\theta$ and the independent terms can be disregarded, leading to the equivalent optimization problem of minimizing the weighted cross entropy loss between the two distributions as
 \begin{align}
 \label{eq:threshold} 
 \theta: \underset{\theta}{\arg \min} \Big\{ - p \log P(\hat{y}\geq \theta) - \lambda (1-p) \log P(\hat{y} < \theta) \Big \} 
 \end{align}.
 For brevity, we set $q = P(\hat{y}\geq \theta)$ and the minimization can be expressed as
 \begin{align*}
-& \ \underset{\theta}{\arg \min} \Big\{ - p \log q - \lambda (1-p) \log (1-q) \Big \} = \\
+\theta:& \ \underset{\theta}{\arg \min} \Big\{ - p \log q - \lambda (1-p) \log (1-q) \Big \} = \\
 =& \ \underset{\theta}{\arg \min} \Big\{ - \log q^p - \log (1-q)^{\lambda(1-p)} \Big \} \\
 =& \ \underset{\theta}{\arg \min} \Big\{ - \log q^p (1-q)^{\lambda(1-p)} \Big \} \\
-=& \ \underset{\theta}{\arg \min} \Big\{ - q^p (1-q)^{\lambda(1-p)} \Big \} \\
-\end{align*}.
+=& \ \underset{\theta}{\arg \min} \Big\{ - q^p (1-q)^{\lambda(1-p)} \Big \} \text{.}
+\end{align*}
 Deriving and solving for zero, we have the expression
 \begin{align*}
-\partial_q q^p (1-q)^{\lambda(1-p)} =& -\lambda(1-p)(1-q)^{\lambda(1-p)-1}q^p + pq^{p-1}(1-q)^{\lambda(1-p)} \\
+\partial_q q^p (1-q)^{\lambda(1-p)} =& \ -\lambda(1-p)(1-q)^{\lambda(1-p)-1}q^p + pq^{p-1}(1-q)^{\lambda(1-p)} \\
 =& \ (1-q)^{\lambda(1-p)-1}(-\lambda(1-p)q^p + p(1-q)q^{p-1}) \\
 =& \ 0
 \end{align*}
 leading to the closed form solution
 \begin{align}
-p(1-q)q^{p-1} =& \lambda(1-p)q^p \\
-\rightarrow q =& \frac{p}{p + \lambda(1-p)}
+p(1-q)q^{p-1} =& \ \lambda(1-p)q^p \\
+\rightarrow q =& \ \frac{p}{p + \lambda(1-p)}\text{.}
 \label{eq:pos}
-\end{align}.
+\end{align}
 Here, $q$ corresponds to a resulting proportion of positive predictions associated with a certain threshold $\theta$ when applied to the raw predictions.
 In this way, we arrive at a structured way of quantifying and minimizing the tradeoff between probability of errors and the associated costs of each error.
 
@@ -117,23 +116,23 @@ We may also find specific solutions to this threshold optimization problem in ca
 Given that the set of predictions is modelled by the following, exponential mixture distribution
 
 \begin{align*}
-    f_0(x\vert y=0;\beta_0) =& \frac{\beta_0}{Z_0}e^{-\beta_0 x} = \frac{\beta_0}{1-e^{-\beta_0}}e^{-\beta_0 x} \\
-    f_1(x\vert y=1;\beta_1) =& \frac{\beta_1}{Z_1}e^{\beta_1 x} = \frac{-\beta_1}{1-e^{\beta_1}}e^{\beta_1 x}\\
-    f (x;\beta_0,\beta_1,\alpha) =& (1-\alpha)\frac{\beta_0}{1-e^{-\beta_0}}e^{-\beta_0 x} - \alpha\frac{\beta_1}{1-e^{\beta_1}}e^{\beta_1 x} % consider changing order of alpha=1-alpha
+    f_0(x\vert y=0;\beta_0) =& \ \frac{\beta_0}{Z_0}e^{-\beta_0 x} = \frac{\beta_0}{1-e^{-\beta_0}}e^{-\beta_0 x} \\
+    f_1(x\vert y=1;\beta_1) =& \ \frac{\beta_1}{Z_1}e^{\beta_1 x} = \frac{-\beta_1}{1-e^{\beta_1}}e^{\beta_1 x}\\
+    f (x;\beta_0,\beta_1,\alpha) =& \ (1-\alpha)\frac{\beta_0}{1-e^{-\beta_0}}e^{-\beta_0 x} - \alpha\frac{\beta_1}{1-e^{\beta_1}}e^{\beta_1 x} % consider changing order of alpha=1-alpha
 \end{align*}
 we can find the optimal threshold $\theta$ by finding the point where the proportion of expected predicted positives is equal to the one found in Equation \ref{eq:pos}. We recognize that $\alpha = p$ and set
 
 \begin{align}
     \frac{p}{p+\lambda(1-p)} = & \int_{\theta}^1 f(x;\beta_0, \beta_1, p) dx = \\
     = & \int_{\theta}^1 \frac{1-p}{1-e^{-\beta_0}}\beta_0e^{-\beta_0x} - \frac{p}{1-e^{\beta_1}}\beta_1e^{\beta_1x} dx = \\
-    = & \frac{1-p}{1-e^{-\beta_0}}(e^{-\beta_0}-e^{-\beta_0 \theta}) - \frac{p}{1-e^{\beta_1}}(e^{\beta_1}-e^{\beta_1 \theta})
+    = & \ \frac{1-p}{1-e^{-\beta_0}}(e^{-\beta_0}-e^{-\beta_0 \theta}) - \frac{p}{1-e^{\beta_1}}(e^{\beta_1}-e^{\beta_1 \theta})\text{.}
 \end{align}
 
 Rearranging and setting $\beta_1 = \beta_0 = \beta$ for simplicity, we can define the function
 
 \begin{align}
     f(\theta) =& \ \frac{e^{-\beta \theta} (e^\beta-e^{\beta \theta}) (p(e^{\beta \theta}-1) + 1)}{e^{\beta}-1} - \frac{p}{p+\lambda(1-p)} = 0 \\
-    f'(\theta) =& \ \frac{\beta e^{-\beta \theta} ((p-1) e^\beta - p e^{2\beta \theta})}{e^{\beta}-1}
+    f'(\theta) =& \ \frac{\beta e^{-\beta \theta} ((p-1) e^\beta - p e^{2\beta \theta})}{e^{\beta}-1}\text{.}
 \end{align}
 Using Newton's Method we can find an approximate solution to $\theta$ by iterating
 \begin{align}
@@ -147,7 +146,7 @@ until convergence. An example of this method is shown in Figure \ref{fig:exp5}.
     \label{fig:exp5}
 \end{figure}
 \section{Practical examples}
-In order to illustrate how this threshold search can be used, a few simple cases are studied for known binary datasets.
+In order to illustrate how this threshold search can be used in practice, a few simple cases are studied for known binary datasets.
 \subsection{Setup}
 In order to generate predictions, a small decision tree model using LightGBM was implemented with default parameters. The project was implemented in Python using the \texttt{LGBMClassifier} package, as well as \texttt{sklearn}, \texttt{numpy} and \texttt{pandas} for data manipulation. The code used to produce the results is available at \url{https://github.com/wollbo/threshold}.
 \subsection{Breast Cancer Wisconsin}
