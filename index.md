@@ -13,7 +13,5 @@ Through this assumption, we can posit that the distribution of predictions shoul
 We can quantify this distance by measuring the KL-divergence between the class distribution of the gathered training data as well as that of the predictions for a given threshold.
 In doing so, we can find an analytical, closed form solution for the threshold corresponding to a certain class balance. We can also introduce assymetrical weights associated with the different errors, leading to a solution on the form
 
-```markdown
-q = p / (p + lambda * (1-p))
-```
-{% include /custom/cost.html %}
+{% include /svg/eq1.svg %}
+[//]: # ({% include /custom/cost.html %})
