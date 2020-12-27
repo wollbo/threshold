@@ -19,5 +19,5 @@ where p is the proportion of positives in the underlying distribution and λ the
 
 ### Resources
 
-A full report with derivations, theory and examples is available for download [here](https://github.com/wollbo/threshold/report/main.pdf). The source code used for producing the figures as well as a package for implementing this threshold search can be found at [github.com/wollbo/threshold](https://github.com/wollbo/threshold)
+A full report with derivations, theory and examples is available for download [here](https://github.com/wollbo/threshold/blob/main/report/main.pdf). The source code used for producing the figures as well as a package for implementing this threshold search can be found at [github.com/wollbo/threshold](https://github.com/wollbo/threshold)
 
