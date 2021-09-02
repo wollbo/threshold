@@ -72,7 +72,7 @@ and for the binary classification problem we simply insert our binary probabilit
 \begin{align}
 \textbf{KL}[p(y) \vert\vert q_\theta(\hat{y})] = & \ - p(y=1) \log \frac{q_\theta(\hat{y}=1)}{p(y=1)} - p(y=0) \log \frac{q_\theta(\hat{y}=0)}{p(y=0)} \\ = & \label{eq:tprfpr} -p \log \underbrace{\frac{P(\hat{y}\geq \theta)}{p}}_\text{"fnr cost"} - (1-p) \log \underbrace{\frac{P(\hat{y} < \theta)}{1-p}}_\text{"fpr cost"} \text{.}
 \end{align}
-In the binary case, each term is associated with an error cost depending on the amount of respective errors resulting from a given threshold, similar to the expected cost in Equation \ref{eq:cost}. With a too conservative threshold the probability of a negative in the global distribution of predictions $q_\theta (\hat{y}=0)$ is larger than that of the true negative labels $p(y=0)$, resulting in an increased amount of false negatives. This in turn implies that the proportion of predicted positives must be smaller than the true amount of positives, $q_\theta(\hat{y} = 1) < p(y=1)$. That is, the classifications follow
+In the binary case, each term is associated with an error cost depending on the amount of respective errors resulting from a given threshold, similar to the expected cost in Equation (\ref{eq:cost}). With a too conservative threshold the probability of a negative in the global distribution of predictions $q_\theta (\hat{y}=0)$ is larger than that of the true negative labels $p(y=0)$, resulting in an increased amount of false negatives. This in turn implies that the proportion of predicted positives must be smaller than the true amount of positives, $q_\theta(\hat{y} = 1) < p(y=1)$. That is, the classifications follow
 \begin{align*}
     q_\theta(\hat{y}=0) > p(y=0) \iff  TN + FN > \underbrace{TN+FP}_{N} \rightarrow FN>FP \text{.}
 \end{align*}
@@ -121,7 +121,7 @@ Given that the set of predictions is modelled by the following, exponential mixt
     f_1(x\vert y=1;\beta_1) =& \ \frac{\beta_1}{Z_1}e^{\beta_1 x} = \frac{-\beta_1}{1-e^{\beta_1}}e^{\beta_1 x}\\
     f (x;\beta_0,\beta_1,\alpha) =& \ (1-\alpha)\frac{\beta_0}{1-e^{-\beta_0}}e^{-\beta_0 x} - \alpha\frac{\beta_1}{1-e^{\beta_1}}e^{\beta_1 x} % consider changing order of alpha=1-alpha
 \end{align*}
-we can find the optimal threshold $\theta$ by finding the point where the proportion of expected predicted positives is equal to the one found in Equation \ref{eq:pos}. We recognize that $\alpha = p$ and set
+we can find the optimal threshold $\theta$ by finding the point where the proportion of expected predicted positives is equal to the one found in Equation (\ref{eq:pos}). We recognize that $\alpha = p$ and set
 
 \begin{align}
     \frac{p}{p+\lambda(1-p)} = & \int_{\theta}^1 f(x;\beta_0, \beta_1, p) dx = \\
@@ -149,7 +149,7 @@ until convergence. An example of this method is shown in Figure \ref{fig:exp5}.
 \section{Practical examples}
 In order to illustrate how this threshold search can be used in practice, a few simple cases are studied for known binary datasets.
 \subsection{Setup}
-In order to generate predictions, a small decision tree model using LightGBM was implemented with default parameters. The project was implemented in Python using the \texttt{LGBMClassifier} package, as well as \texttt{sklearn}, \texttt{numpy} and \texttt{pandas} for data manipulation. The code used to produce the results is available at \url{https://github.com/wollbo/threshold}. The labels of the dataset are marked accordingly: positive test samples in blue, and negative test samples are marked in orange. The probability output from the classifier is presented as histograms, with several thresholds $\theta$calculated from the classifier predictions using Equation \ref{eq:pos} for different misclassification cost ratios $\lambda$.
+In order to generate predictions, a small decision tree model using LightGBM was implemented with default parameters. The project was implemented in Python using the \texttt{LGBMClassifier} package, as well as \texttt{sklearn}, \texttt{numpy} and \texttt{pandas} for data manipulation. The code used to produce the results is available at \url{https://github.com/wollbo/threshold}. The labels of the dataset are marked accordingly: positive test samples in blue, and negative test samples are marked in orange. The probability output from the classifier is presented as histograms, with several thresholds $\theta$ calculated from the classifier predictions using Equation (\ref{eq:pos}) for different misclassification cost ratios $\lambda$.
 \subsection{Breast Cancer Wisconsin}
 The Breast Cancer Wisconsin dataset is a traditional dataset used for evaluating baseline performance for binary classifiers, containing a majority positive samples. It is comprised of features computed from digitized images of mammograms. In this case, the simple desicion tree model is able to almost perfectly separate the positive and negative samples with only a few outliers. Notably, the raw output probabilities are also very distinctly 1 or 0.
 \begin{figure}[H]
@@ -167,7 +167,7 @@ The German Credit dataset is comprised of several categorical and numerical attr
 \end{figure}
 
 \subsection{KDD CUP 2009 - Churn}
-    The KDD CUP 2009 dataset was initially used for the competition of bearing the same name, and consists of customer relationship data of the French Telecom company Orange. In this dataset, each customer has 190 numerical and 40 categorical features which are very sparse. Corresponding to the feature data is the labels of 'Churn' which is used to train and evaluate the model. This is a much harder dataset to classify than the other two, and the decision tree model struggles to separate the two distributions. In this case, only 7\% of the samples are positive, which means that the selected thresholds become very closely moved to 0. 
+    The KDD CUP 2009 dataset was initially used for the competition bearing the same name, and consists of customer relationship data of the French Telecom company Orange. In this dataset, each customer has 190 numerical and 40 categorical features which are very sparse. Corresponding to the feature data is the labels of 'Churn' which is used to train and evaluate the model. This is a much harder dataset to classify than the other two, and the decision tree model struggles to separate the two distributions. In this case, only 7\% of the samples are positive, which means that the selected thresholds become shifted to 0.
 \begin{figure}[H]
     \centering
     \scalebox{.8}{\input{figures/thresholds_orange-small.pgf}}
