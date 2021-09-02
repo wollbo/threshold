@@ -56,6 +56,14 @@ def kl_cost(span, p=0.5, alpha=1):
     return - p * np.log(span) - alpha * (1-p) * np.log(1-span)
 
 
+def find_threshold(data, q=0.5):
+    """Finds the threshold associated with the share of positives q in the dataset"""
+    sorted = np.sort(data) 
+    indices = np.flip(np.arange(start=0, stop=len(data))) # looking from right side
+    mini = np.argmin(abs(indices/len(sorted)-q))
+    return sorted[mini]
+
+
 def normalize_hist(values, hist):
     for item in hist:
         item.set_height(item.get_height()/sum(values))
@@ -69,8 +77,8 @@ def exponential_mixture(span, p=0.5, l0=4, l1=6):
 
 def exponential_threshold(p=0.5, alpha=1, l=5, epsilon=0.001):
     """Implementation of Newtons Method for finding q with exponential integral"""
-    q = 0.5
-    q_new = 1
+    q = 0
+    q_new = kl_threshold(p, alpha)
     while abs(q-q_new) > epsilon:
         q = q_new
         f, d = exponential_integral(p, q, l)
@@ -81,5 +89,5 @@ def exponential_threshold(p=0.5, alpha=1, l=5, epsilon=0.001):
 def exponential_integral(p=0.5, q=0.5, l=5):
     """Cost function for calculating I = p / (p + l * (1-p)) and its derivative"""
     f_val = np.exp(-l*q) * (np.exp(l)-np.exp(l*q)) * (p*(np.exp(l*q)-1) + 1) / (np.exp(l)-1)
-    df_val = np.exp(-l*q) * (l*np.exp(l)*(p-1) - l*p*np.exp(2*l*q)) / (np.exp(l)-1)
+    df_val = l * np.exp(-l*q) * (np.exp(l)*(p-1) - p*np.exp(2*l*q)) / (np.exp(l)-1)
     return f_val, df_val

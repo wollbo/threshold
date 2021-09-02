@@ -5,6 +5,7 @@
 \usepackage{pgfplots}
 \usepackage{hyperref}
 \usepackage{graphicx}
+\usepackage{float}
 \setlength{\parindent}{0pt}
 
 
@@ -80,7 +81,7 @@ However, the cost associated with a false positive error is generally different 
 \begin{align}
     \theta: \underset{\theta}{\arg \min} \Big\{ - p \log \frac{P(\hat{y}\geq \theta)}{p} - \lambda (1-p) \log \frac{P(\hat{y} < \theta)}{1-p} \Big \}
 \end{align}
-For $\lambda>1$, false positives are associated with a higher cost during minimization (in relation to their prevalence in the true labels).
+For $\lambda>1$, false positives are associated with a higher cost during minimization (in relation to their prevalence in the true labels). This causes the resulting proportion of predicted positives given the threshold to be smaller. % since the total product lambda * fpr cost is increased!
 Again, the optimization is performed with regard to $\theta$ and the independent terms can be disregarded, leading to the equivalent optimization problem of minimizing the weighted cross entropy loss between the two distributions as
 \begin{align}
 \label{eq:threshold} 
@@ -141,31 +142,33 @@ Using Newton's Method we can find an approximate solution to $\theta$ by iterati
 until convergence. An example of this method is shown in Figure \ref{fig:exp5}.
 \begin{figure}
     \centering
-    \scalebox{.8}{\input{figures/thresholds_credit_exponential_5.pgf}}
-    \caption{Thresholds for an exponential test prediction distribution with parameter $\beta = 5$ in a dataset of 70 \% positive examples.}
+    \scalebox{.8}{\input{figures/thresholds_breastcancer_exponential_5.pgf}}
+    \caption{Thresholds for an exponential test prediction distribution with parameter $\beta = 5$ in a dataset of 61 \% positive examples.}
     \label{fig:exp5}
 \end{figure}
 \section{Practical examples}
 In order to illustrate how this threshold search can be used in practice, a few simple cases are studied for known binary datasets.
 \subsection{Setup}
-In order to generate predictions, a small decision tree model using LightGBM was implemented with default parameters. The project was implemented in Python using the \texttt{LGBMClassifier} package, as well as \texttt{sklearn}, \texttt{numpy} and \texttt{pandas} for data manipulation. The code used to produce the results is available at \url{https://github.com/wollbo/threshold}.
+In order to generate predictions, a small decision tree model using LightGBM was implemented with default parameters. The project was implemented in Python using the \texttt{LGBMClassifier} package, as well as \texttt{sklearn}, \texttt{numpy} and \texttt{pandas} for data manipulation. The code used to produce the results is available at \url{https://github.com/wollbo/threshold}. The labels of the dataset are marked accordingly: positive test samples in blue, and negative test samples are marked in orange. The probability output from the classifier is presented as histograms, with several thresholds $\theta$calculated from the classifier predictions using Equation \ref{eq:pos} for different misclassification cost ratios $\lambda$.
 \subsection{Breast Cancer Wisconsin}
-\begin{figure}
+The Breast Cancer Wisconsin dataset is a traditional dataset used for evaluating baseline performance for binary classifiers, containing a majority positive samples. It is comprised of features computed from digitized images of mammograms. In this case, the simple desicion tree model is able to almost perfectly separate the positive and negative samples with only a few outliers. Notably, the raw output probabilities are also very distinctly 1 or 0.
+\begin{figure}[H]
     \centering
     \scalebox{.8}{\input{figures/thresholds_breastcancer.pgf}}
     \caption{Thresholds and predictions generated for the Wisconsin Breast Cancer dataset, 64 \% positive samples. This is a very easy dataset to classify.}
 \end{figure}
-\subsection{German Credit Data}
 
-\begin{figure}
+\subsection{German Credit Data}
+The German Credit dataset is comprised of several categorical and numerical attributes associated with the financial status of individuals as to determine their credit worthiness, with the majority of samples being positive (corresponding to a 'good' credit status). This is also a rather traditional dataset, but is considerably harder to classify than the Breast Cancer dataset. Still, the algorithm is generally able to separate the positives and negatives, and the threshold selection shows how increasing the parameter $\lambda$ increases the propensity to classify samples as positive.
+\begin{figure}[H]
     \centering
     \scalebox{.8}{\input{figures/thresholds_credit.pgf}}
     \caption{Thresholds and predictions generated for the German Credit Data dataset, 71 \% positive samples.}
 \end{figure}
 
 \subsection{KDD CUP 2009 - Churn}
-
-\begin{figure}
+    The KDD CUP 2009 dataset was initially used for the competition of bearing the same name, and consists of customer relationship data of the French Telecom company Orange. In this dataset, each customer has 190 numerical and 40 categorical features which are very sparse. Corresponding to the feature data is the labels of 'Churn' which is used to train and evaluate the model. This is a much harder dataset to classify than the other two, and the decision tree model struggles to separate the two distributions. In this case, only 7\% of the samples are positive, which means that the selected thresholds become very closely moved to 0. 
+\begin{figure}[H]
     \centering
     \scalebox{.8}{\input{figures/thresholds_orange-small.pgf}}
     \caption{Thresholds and predictions generated for the KDD Cup 2009 Churn dataset, 7 \% positive samples. This is a hard dataset to classify.}
