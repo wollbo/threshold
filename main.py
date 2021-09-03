@@ -3,7 +3,6 @@ import argparse
 import matplotlib
 import matplotlib.pyplot as plt
 from lightgbm import LGBMClassifier
-import sys
 from sklearn import metrics, model_selection
 from sklearn.preprocessing import StandardScaler
 from sklearn.pipeline import make_pipeline
@@ -99,6 +98,7 @@ if __name__ == '__main__':
         q = core.kl_threshold(p, alpha=a)
         print(f'q is {q}')
         threshold = core.find_threshold(pred, q) # find for which threshold where the number of positives = q
+        print(f'theta is {threshold}')
         plt.axvline(x=threshold, c=colors[idx+2], lw=2)
         thresholds.append(threshold)
     plt.legend(labels=[f'$\lambda = {a}$, $\\theta = {np.around(t, 2)}$' for (a,t) in zip(lambdas, thresholds)])
@@ -110,8 +110,4 @@ if __name__ == '__main__':
         plt.legend(labels=[f'λ = {a}' for a in lambdas])
         plt.show()
 
-
-    # training data predictions
-    # plt.hist(model.predict_proba(x_train)[:, 1][y_train == 0], bins=50)
-    # plt.hist(model.predict_proba(x_train)[:, 1][y_train == 1], bins=50)
 

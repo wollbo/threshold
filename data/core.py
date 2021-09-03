@@ -1,9 +1,7 @@
 import numpy as np
-import tensorflow as tf
 import pandas as pd
-import sqlite3
 import sys
-from sklearn import datasets, metrics
+from sklearn import datasets
 
 
 def load_data(dataset="breastcancer", return_X_y=True):
@@ -43,11 +41,6 @@ def clean_data(data):
     return data.to_numpy()
 
 
-def read_clean_sql(data):
-    """ Uses SQLite to read and clean larger datasets """
-    pass
-
-
 def kl_threshold(p, alpha):
     return p / (p + alpha * (1-p))
 
@@ -64,11 +57,6 @@ def find_threshold(data, q=0.5):
     return sorted[mini]
 
 
-def normalize_hist(values, hist):
-    for item in hist:
-        item.set_height(item.get_height()/sum(values))
-
-
 def exponential_mixture(span, p=0.5, l0=4, l1=6):
     f0 = np.exp(-l0 * span) * l0 / (1 - np.exp(-l0))
     f1 = - np.exp(l1 * span) * l1 / (1 - np.exp(l1))
@@ -77,13 +65,14 @@ def exponential_mixture(span, p=0.5, l0=4, l1=6):
 
 def exponential_threshold(p=0.5, alpha=1, l=5, epsilon=0.001):
     """Implementation of Newtons Method for finding q with exponential integral"""
-    q = 0
-    q_new = kl_threshold(p, alpha)
-    while abs(q-q_new) > epsilon:
-        q = q_new
-        f, d = exponential_integral(p, q, l)
-        q_new = q - (f-kl_threshold(p, alpha))/d
-    return q
+    q = kl_threshold(p, alpha) 
+    theta = 0
+    theta_new = 0.5
+    while abs(theta-theta_new) > epsilon:
+        theta = theta_new
+        f, d = exponential_integral(p, theta, l)
+        theta_new = theta - (f-q)/d
+    return theta
 
 
 def exponential_integral(p=0.5, q=0.5, l=5):
