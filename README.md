@@ -20,7 +20,7 @@ Defining the proportion of positive samples in the data as *p* and the proportio
 
 ## implementation
 
-The theory derived is utilized to calculate thresholds for a number of different ML-dataset predictions in Python. This is achieved by first estimating $p$ from the labels of the training data, and then after performing the test predictions, picking the threshold found at the index which corresponds to the resulting proportion $q$ positive samples in the sorted set of test predictions.
+The theory derived is utilized to calculate thresholds for a number of different ML-dataset predictions in Python. This is achieved by first estimating *p* from the labels of the training data, and then after performing the test predictions, picking the threshold found at the index which corresponds to the resulting proportion *q* positive samples in the sorted set of test predictions.
 
 
 
