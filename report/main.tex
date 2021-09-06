@@ -60,10 +60,10 @@ Instead, given that we can collect a sufficient set of unthresholded test predic
 
 Binary classification is the most simple application of prediction in machine learning, but also the most fundamental, since every classification problem can be formulated as sets of binary prediction tasks or decision trees. For a given post model classification problem we have a set of true labels following a distribution $p(y)$ which can be estimated empirically directly from the training data (assuming that both training and test data follow the same distribution). Likewise for the predictions $\hat{y}$ we can define an empirical distribution given a threshold $\theta$ as
 \begin{align*}
-    q_\theta(\hat{y}) = \begin{cases} 1, & \text{w. p.} \ \frac{1}{N}\sum_{i=1}^N \theta(\hat{y}_i) \\[0.2cm]
-    0, &  \text{w. p.} \ 1 - \frac{1}{N}\sum_{i=1}^N \theta(\hat{y}_i) \end{cases}
-\end{align*}
-where $\theta(\hat{y}_i) = 1$ if $\hat{y}_i \geq \theta$, else 0.
+    q_\theta(\hat{y}) = \begin{cases} 1, & \text{w. p.} \ \frac{1}{N}\sum_{n=1}^N \theta(\hat{y}_n) \\[0.2cm]
+    0, &  \text{w. p.} \ 1 - \frac{1}{N}\sum_{n=1}^N \theta(\hat{y}_n) \end{cases}
+\end{align*}\text{,}
+where $\theta(\hat{y}_n) = 1$ if $\hat{y}_n \geq \theta$, else 0.
 In the case of discrete class classification, the integral in the KL-divergence is replaced with a sum, such that
 \begin{equation}
 \textbf{KL}[p(y) \vert\vert q_\theta(\hat{y})] = -\sum p(y) \log \frac{q_\theta(\hat{y})}{p(y)}\text{,}
@@ -85,8 +85,8 @@ For $\lambda>1$, false positives are associated with a higher cost during minimi
 Again, the optimization is performed with regard to $\theta$ and the independent terms can be disregarded, leading to the equivalent optimization problem of minimizing the weighted cross entropy loss between the two distributions as
 \begin{align}
 \label{eq:threshold} 
-\theta: \underset{\theta}{\arg \min} \Big\{ - p \log P(\hat{y}\geq \theta) - \lambda (1-p) \log P(\hat{y} < \theta) \Big \} 
-\end{align}.
+\theta: \underset{\theta}{\arg \min} \Big\{ - p \log P(\hat{y}\geq \theta) - \lambda (1-p) \log P(\hat{y} < \theta) \Big \} \text{.}
+\end{align}
 For brevity, we set $q = P(\hat{y}\geq \theta)$ and the minimization can be expressed as
 \begin{align*}
 \theta:& \ \underset{\theta}{\arg \min} \Big\{ - p \log q - \lambda (1-p) \log (1-q) \Big \} = \\
@@ -108,7 +108,7 @@ p(1-q)q^{p-1} =& \ \lambda(1-p)q^p \\
 \end{align}
 Here, $q$ corresponds to a resulting proportion of positive predictions associated with a certain threshold $\theta$ when applied to the raw predictions. This threshold can be found by finding the index $m$ in the sorted predictions which corresponds to the proportion $q$ of resulting positively classified predictions, according to
 \begin{align*}
-m : \underset{m}{\arg \min}&\big\{ \big \lvert \frac{1}{N}\sum_{n=m}^N\delta(f_\varphi(x_n)) - q \big \rvert \big\}, \ m \in [0, N] \\
+m : \underset{m}{\arg \min}&\Big\{ \Big \lvert q - \frac{1}{N}\sum_{n=m}^N\delta(f_\varphi(x_n)) \Big \rvert \Big\}, \ m \in [0, N] \\
 &\theta = f_\varphi(x_m)
 \end{align*}
 In this way, we arrive at a structured method of quantifying the tradeoff between probability of errors and the associated costs of each error to find the optimal threshold in the binary prediction setting.
@@ -155,7 +155,7 @@ In order to illustrate how this threshold search can be used in practice, a few 
 \subsection{Setup}
 In order to generate predictions, a small decision tree model using LightGBM was implemented with default parameters. The project was implemented in Python using the \texttt{LGBMClassifier} package, as well as \texttt{sklearn}, \texttt{numpy} and \texttt{pandas} for data manipulation. The code used to produce the results is available at \url{https://github.com/wollbo/threshold}. The labels of the dataset are marked accordingly: positive test samples in blue, and negative test samples are marked in orange. The probability output from the classifier is presented as histograms, with several thresholds $\theta$ calculated from the classifier predictions using Equation (\ref{eq:pos}) for different misclassification cost ratios $\lambda$. Points to the right of a threshold is classified as positive, data to the left of the threshold is classified as negatives.
 \subsection{Breast Cancer Wisconsin}
-The Breast Cancer Wisconsin dataset is a traditional dataset used for evaluating baseline performance for binary classifiers, containing a majority positive samples. It is comprised of features computed from digitized images of mammograms. In this case, the simple desicion tree model is able to almost perfectly separate the positive and negative samples with only a few outliers. Notably, the raw output probabilities are also very distinctly 1 or 0.
+The Breast Cancer Wisconsin dataset is a traditional dataset used for evaluating baseline performance for binary classifiers, containing a majority positive samples. It is comprised of features computed from digitized images of mammograms. In this case, the simple decision tree model is able to almost perfectly separate the positive and negative samples with only a few outliers. Notably, the raw output probabilities are also very distinctly 1 or 0.
 \begin{figure}[H]
     \centering
     \scalebox{.8}{\input{figures/thresholds_breastcancer.pgf}}
