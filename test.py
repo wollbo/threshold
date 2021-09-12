@@ -1,38 +1,36 @@
-from base64 import b64encode
-import requests
-import os
+from main import *
+import pandas as pd
+
+pgf = True
+
+if pgf:
+    matplotlib.use("pgf")
+    matplotlib.rcParams.update({
+        "pgf.texsystem": "pdflatex",
+        'font.family': 'serif',
+        'text.usetex': True,
+        'pgf.rcfonts': False,
+    })
+
+lambdas = [0.1, 0.2, 0.5, 1, 2, 5, 10]
+ps = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
+
+df = pd.DataFrame(data=None, index=ps, columns=lambdas)
+
+for lamb in lambdas:
+    vals = []
+    for p in ps:
+        vals.append(core.calculate_z_length(p=p, lamb=lamb))
+
+    df.iloc[:, lambdas.index(lamb)] = vals
+    print(df)
 
 
-
-# fetches url for vf-commonit work-item api
-def fetch_url(organization='vf-commonit', project='WebOperations', work_type='task', api_version='6.0', user='', auth=''):
-    if user and auth:
-        url = 'https://' + user + ':' + auth +'@dev.azure.com/' + organization + '/' + project + '/_apis/wit/workitems/$' + work_type + '?api-version=' + api_version
-    else:
-        url = 'https://dev.azure.com/' + organization + '/' + project + '/_apis/wit/workitems/$' + work_type + '?api-version=' + api_version
-    return url
-
-#user, auth, pat = read_credentials('py-ticket/credentials.txt')
-user = 'bek64'
-pat = 'eiury23tvjipqwdua74bvuvlmbnpycxpngji4ycfe3okppnanygqV'
-
-user_64 = b64encode(user.encode('utf-8')).decode('utf-8') # For Azure Devops authentication
-pat_64 = b64encode(pat.encode('utf-8')).decode('utf-8')
-
-url = fetch_url()
-data = [
-    {
-        "op": "add",
-        "path": "/fields/System.Title",
-        "value": "Test task"
-    }
-]
-
-url = 'https://azure.microsoft.com'
-proxies = {'https': ''}
-r = requests.get(url, proxies=proxies)
-
-print(r.status_code)
-print(pat_64)
-#print(r.content)
-print(url)
+plt.imshow(df, cmap='plasma')
+plt.xlabel('$\lambda$')
+plt.ylabel('$p$')
+plt.colorbar()
+plt.xticks(range(len(lambdas)), df.columns)
+plt.yticks(range(len(ps)), df.index)
+plt.savefig(f'report/figures/hmap.pgf') if pgf else plt.show()
+plt.close(fig='all')

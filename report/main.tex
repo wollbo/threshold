@@ -6,8 +6,13 @@
 \usepackage{hyperref}
 \usepackage{graphicx}
 \usepackage{float}
+\usepackage{import}
 \setlength{\parindent}{0pt}
-
+\newcommand\inputpgf[2]{{
+\let\pgfimageWithoutPath\pgfimage
+\renewcommand{\pgfimage}[2][]{\pgfimageWithoutPath[##1]{#1/##2}}
+\input{#1/#2}
+}}
 
 
 \begin{document}
@@ -102,15 +107,16 @@ Deriving and solving for zero, we have the expression
 \end{align*}
 leading to the closed form solution
 \begin{align}
+\label{eq:pos}
 p(1-q)q^{p-1} =& \ \lambda(1-p)q^p \\
 \rightarrow q =& \ \frac{p}{p + \lambda(1-p)}\text{.}
-\label{eq:pos}
 \end{align}
 Here, $q$ corresponds to a resulting proportion of positive predictions associated with a certain threshold $\theta$ when applied to the raw predictions. This threshold can be found by finding the index $m$ in the sorted predictions which corresponds to the proportion $q$ of resulting positively classified predictions, according to
-\begin{align*}
+\begin{align}
+\label{eq:m}
 m : \underset{m}{\arg \min}&\Big\{ \Big \lvert q - \frac{1}{N}\sum_{n=m}^N\delta(f_\varphi(x_n)) \Big \rvert \Big\}, \ m \in [0, N] \\
 &\theta = f_\varphi(x_m)
-\end{align*}
+\end{align}
 In this way, we arrive at a structured method of quantifying the tradeoff between probability of errors and the associated costs of each error to find the optimal threshold in the binary prediction setting.
 
 % Could be interesting to plot logarithmic x-axis of q as a function of lambda for a few different p
@@ -150,6 +156,43 @@ until convergence. An example of this method is shown in Figure \ref{fig:exp5}.
     \caption{Thresholds for an exponential test prediction distribution with parameter $\beta = 5$ in a dataset of 61 \% positive examples.}
     \label{fig:exp5}
 \end{figure}
+
+\subsection{Statistical significance}
+The whole framework henceforth presented assumes that we have a batch of test predictions from which we are able to infer a threshold representative of the true distribution of test predictions. However, if by chance, we end up with a set of test predictions with class balance widely different from the training data, we can be sure to arrive at suboptimal thresholds. Therefore, in relation to the class balance, we need to define criteria for which we either proceed with calculating the threshold or simply wait for more data to become available before proceeding. \\
+
+Assuming that the number of test predictions in the set is sufficiently large (i.e. $pN\geq 10, (1-p)N\geq 10$) to allow us to view $q$ as normally distributed around the true proportion $\bar{q}$, we can use a z-test to determine how many samples we need to achieve at most error $E=q-\bar{q}$ given a certain confidence level $\alpha$. The test statistic for the z-test is calculated by %We assume that the $q$ we calculate from the test predictions is normally distributed around the true mean $\bar{q}$.
+\begin{align}
+z_{\alpha/2} = \frac{q-\bar{q}}{\frac{\sigma_q}{\sqrt{N}}}\text{.}
+\end{align}
+From here, we may set the confidence interval and error tolerance and solve for $N$.
+We already assumed that the proportion of positives in the training data is roughly the same as in the test data, so it is justified that we calculate the population variance from the training data as 
+\begin{align*}
+    \sigma_q =& \ \sqrt{q(1-q)} \\
+            =& \ \frac{1}{p+\lambda(1-p)}\sqrt{\lambda p(1-p)} \\
+            =& \ \frac{\sqrt{\lambda}}{p+\lambda(1-p)}\sigma_p
+\end{align*}
+Furthermore, we need to decide a margin of error and a confidence interval for our estimation. Since our threshold $\theta$ and proportions $p$ and $q$ all lie in the interval $[0, 1]$, it can be suitable to assume that we want an error no larger than $0.05$ from the true weighted proportion $\bar{q}$. Following standard practice, we also select a 95\% confidence interval. Using the two-sided Z-test, we have
+\begin{align}
+    E = z_{\alpha/2}\frac{\sigma_q}{\sqrt{N}}
+\end{align}
+Thus, to find how large $N$ needs to be for our requirements to hold, we calculate
+\begin{align*}
+    N =& \ (\frac{z_{\alpha/2}}{E})^2\sigma_q^2 \\
+      =& \ (\frac{z_{\alpha/2}}{E})^2 \frac{\lambda}{(p+\lambda(1-p))^2}\sigma_p^2
+\end{align*}
+For the chosen values, Figure \ref{fig:hmap} shows a heatmap of the number of samples $N$ needed to confidently use the developed threshold selection scheme.
+%https://brownmath.com/stat/sampsiz.htm#Case2
+% make a friendly and nice table with p: 0.05:0.95 and different lambda
+\begin{figure}
+    \centering
+    \scalebox{.8}{\inputpgf{figures/}{hmap.pgf}}
+    \caption{Heatmap of the required number of samples $N$ to achieve at most an error of $0.05$ with a $95\%$ CI when estimating $q$.}
+    \label{fig:hmap}
+\end{figure}
+
+
+%Pr(X = m) = (N, m) p^(N-m)(1-p)^m (switched around because 1 is label of p)
+
 \section{Practical examples}
 In order to illustrate how this threshold search can be used in practice, a few simple cases are studied for known binary datasets.
 \subsection{Setup}

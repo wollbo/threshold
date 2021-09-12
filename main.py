@@ -56,6 +56,8 @@ if __name__ == '__main__':
 
     p = sum(y_train) / len(y_train)  # note: varying data structure between datasets
     print(f'p = {p}')
+    N = len(y_test)
+    print(f'test samples N: {N}')
 
     model = make_pipeline(StandardScaler(), LGBMClassifier())
     model.fit(x_train, y_train)

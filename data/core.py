@@ -1,7 +1,9 @@
 import numpy as np
 import pandas as pd
 import sys
+import math
 from sklearn import datasets
+from scipy.stats import norm
 
 
 def load_data(dataset="breastcancer", return_X_y=True):
@@ -80,3 +82,11 @@ def exponential_integral(p=0.5, q=0.5, l=5):
     f_val = np.exp(-l*q) * (np.exp(l)-np.exp(l*q)) * (p*(np.exp(l*q)-1) + 1) / (np.exp(l)-1)
     df_val = l * np.exp(-l*q) * (np.exp(l)*(p-1) - p*np.exp(2*l*q)) / (np.exp(l)-1)
     return f_val, df_val
+
+
+def calculate_z_length(alpha=0.05, error=0.05, p=0.5, lamb=1, comp=False):
+    """Calculates minimum amount of samples required for specified error in alpha CI"""
+    sigma_q = np.sqrt(lamb) * (p*(1-p)) / (p + lamb*(1-p)) 
+    z_alpha = norm.ppf(1-(1-alpha/2))
+    comp = np.max([math.ceil(10/p), math.ceil(10/(1-p))]) if comp else 0
+    return np.max([math.ceil((z_alpha/error)**2 * sigma_q**2), comp])
